@@ -16,21 +16,27 @@ const addFirm = async (req, res) => {
     try {
         const { firmName, area, category, region, offer } = req.body;
     const image = req.file? req.file.filename: undefined;
-    const Vendor = await Vendor.findById(req.vendorId)
+    const vendor = await Vendor.findById(req.vendorId)
     if(!vendor){
-        res.status(404).json({message: "Vendor not found."})
+       return res.status(404).json({message: "Vendor not found."})
     }
     const firm = new Firm({
         firmName, area, category, region, offer, image, vendor: vendor._id
     })
 
-    await firm.save()
+    const savedFirm = await firm.save()
+
+    vendor.firm.push(savedFirm)
+    await vendor.save()
+
+
     return res.status(200).json({message: "Firm added successfully", firm})
     } catch (error) {
-        console.error("Failed to add firm", error.message)//Debugging
-        res.status(500).json("Internal server error", error.message)
+        console.error("Failed to add firm:", error.message)//Debugging
+        res.status(500).json({ error: "Internal server error", details: error.message });
+
     }
 
 }
 
-module.exports = {addFirm: [upload.single('image'), addFirm]}
+module.exports = { addFirm: [upload.single('image'), addFirm] } 
