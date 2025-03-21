@@ -1,6 +1,10 @@
 const Vendor = require("../models/Vendor");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const dotEnv = require("dotenv");
+dotEnv.config()
+
+const secretKey = process.env.JWT_SECRET
 
 const vendorRegister = async (req, res) => {
     const { username, email, password } = req.body;
@@ -50,7 +54,11 @@ const vendorLogin = async (req, res) => {
         if (!vendor || !(await bcrypt.compare(password, vendor.password))) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
-        res.status(200).json({ message: "Vendor logged in successfully", vendor });
+
+        const token = jwt.sign({vendorId: vendor._id}, secretKey, {expiresIn: "1h"})
+        
+        res.status(200).json({ message: "Vendor logged in successfully", vendor, token });
+        console.log(email, "this is token:", token) //Debugging
     } catch (error) {
         res.status(500).json({ message: "Error logging in", error: error.message });
         console.error("Error logging in:", error.message);
