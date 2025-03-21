@@ -65,8 +65,26 @@ const vendorLogin = async (req, res) => {
     }
 };
 
+const getAllVendors = async (req, res) => {
+    try {
+        // 🔍 Fetch all vendors and populate "firm" field
+        const vendors = await Vendor.find().populate("firm");
+
+        // ✅ Check if vendors exist
+        if (!vendors || vendors.length === 0) {
+            return res.status(404).json({ message: "No vendors found" });
+        }
+
+        res.status(200).json({ message: "Vendors retrieved successfully", vendors });
+    } catch (error) {
+        console.error("❌ Failed to get all vendors:", error.message);
+        res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+};
+
 
 module.exports = {
     vendorRegister,
-    vendorLogin
+    vendorLogin,
+    getAllVendors
 };
